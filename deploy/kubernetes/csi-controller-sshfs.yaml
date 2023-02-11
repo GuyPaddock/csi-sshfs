@@ -22,7 +22,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2
           args:
             - -v=3
             - "--csi-address=$(ADDRESS)"
@@ -36,7 +36,7 @@ spec:
             - name: socket-dir
               mountPath: /csi
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.5.1
           args:
             - -v=3
             - "--csi-address=$(ADDRESS)"

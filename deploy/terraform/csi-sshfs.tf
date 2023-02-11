@@ -1,9 +1,9 @@
 locals {
   debug_mode = false
   csi-sshfs_image_tag = local.debug_mode ? "debug" : "latest"
-  csi-node-driver-registrar_image_tag = "v2.1.0" # https://github.com/kubernetes-csi/node-driver-registrar/releases
-  csi-attacher_image_tag = "v3.1.0" # https://github.com/kubernetes-csi/external-attacher/releases
-  csi-provisioner_image_tag = "v2.1.0" # https://github.com/kubernetes-csi/external-provisioner/releases
+  csi-node-driver-registrar_image_tag = "v2.6.3" # https://github.com/kubernetes-csi/node-driver-registrar/releases
+  csi-attacher_image_tag = "v3.5.1" # https://github.com/kubernetes-csi/external-attacher/releases
+  csi-provisioner_image_tag = "v2.2.2" # https://github.com/kubernetes-csi/external-provisioner/releases
   on_rke = true
   kubeletdir = local.on_rke ? "/opt/rke/var/lib/kubelet" : "/var/lib/kubelet"
   controller_name = "csi-controller-sshfs"
