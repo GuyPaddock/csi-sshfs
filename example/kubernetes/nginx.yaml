@@ -11,7 +11,7 @@ spec:
     storage: 100Gi
   storageClassName: sshfs
   csi:
-    driver: csi-sshfs
+    driver: co.p4t.csi.sshfs
     volumeHandle: data-id
     volumeAttributes:
       server: "10.135.151.63"

@@ -1,21 +1,24 @@
-# Container Storage Interface Driver for SSHFS
-
-**Warning: This is only a proof of concept and is not actively maintained. It should not be used in production environments!**
+# Container Storage Interface (CSI) Driver for SSHFS
 
 This repository contains a CSI driver for SSHFS.
 
-This fork has been revamped and rewritten, though the `deploy/kubernetes{,-debug}` folders weren't updated, and their contents will definitely fail on recent versions of kubernetes.
+This is a fork of the original [`chr-fritz/csi-sshfs`](https://github.com/chr-fritz/csi-sshfs) CSI
+driver that has been revamped and rewritten to work on Kubernetes 1.22 and later. Both the 
+`deploy/kubernetes` and `deploy/terraform` folder can be used as a guide to the proper new 
+deployment structure.
 
-The `deploy/terraform` folder can be used as a guide to the proper new deployment structure.
+## Known Issues
 
-NOTE: The `volumeHandle` described below must be unique per `PersistentVolume`. I rewrote this entire project in search of a bug that ended up being caused by my multiple identical `volumeHandle`s. F.
-
-Also expect to have file ownership/permissions weirdness, SSHFS doesn't handle that for you.
+- The `deploy/kubernetes-debug` folder wasn't updated. Its contents will definitely fail on recent 
+  versions of kubernetes.
+- The `volumeHandle` must be unique per `PersistentVolume`.
+- Expect to have file ownership/permissions weirdness, as SSHFS doesn't handle that for you.
+- The original driver was only a proof of concept. YMMV in a production environment.
 
 ## Usage
 
 Deploy the whole directory `deploy/kubernetes`.
-This installs the csi controller and node plugin and a appropriate storage class for the csi driver.
+This installs the csi controller and node plugin and an appropriate storage class for the csi driver.
 ```bash
 kubectl apply -f deploy/kubernetes
 ```
@@ -35,7 +38,7 @@ spec:
     storage: 100Gi
   storageClassName: sshfs
   csi:
-    driver: csi-sshfs
+    driver: co.p4t.csi.sshfs
     volumeHandle: data-id
     volumeAttributes:
       server: "<HOSTNAME|IP>"
