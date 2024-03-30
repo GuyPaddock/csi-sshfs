@@ -1,4 +1,3 @@
-# This YAML defines all API objects to create RBAC roles for CSI node plugin
 apiVersion: v1
 kind: ServiceAccount
 metadata:

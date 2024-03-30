@@ -1,14 +1,10 @@
-# This YAML file contains attacher & csi driver API objects that are necessary
-# to run external CSI attacher for sshfs
-
-kind: StatefulSet
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: csi-controller-sshfs
   namespace: csi-sshfs
 spec:
-  serviceName: "csi-controller-sshfs"
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: csi-controller-sshfs
@@ -17,48 +13,70 @@ spec:
       labels:
         app: csi-controller-sshfs
     spec:
+      priorityClassName: system-cluster-critical
       serviceAccountName: csi-controller-sshfs
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
       containers:
-        - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v1.0.1
+        - name: csi-provisioner
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2
           args:
-            - "--v=5"
+            - -v=3
             - "--csi-address=$(ADDRESS)"
+            - --leader-election
+            - --leader-election-namespace=csi-sshfs
+            - --extra-create-metadata
           env:
             - name: ADDRESS
-              value: /csi/csi.sock
-          imagePullPolicy: "Always"
+              value: /csi/csi-provisioner.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
-        - name: csi-cluster-driver-registrar
-          image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
+        - name: csi-attacher
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.5.1
           args:
-            - "--v=5"
-            - "--pod-info-mount-version=\"v1\""
+            - -v=3
             - "--csi-address=$(ADDRESS)"
+            - --leader-election
+            - --leader-election-namespace=csi-sshfs
           env:
             - name: ADDRESS
-              value: /csi/csi.sock
+              value: /csi/csi-provisioner.sock
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
         - name: sshfs
           image: patricol/csi-sshfs:latest
-          args :
+          imagePullPolicy: Always
+          args:
+            - run
+            - -v=3
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
+            - --csi-driver-name=co.p4t.csi.sshfs
           env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: NODE_ID
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
-              value: unix://plugin/csi.sock
-          imagePullPolicy: "Always"
+              value: unix://csi/csi-provisioner.sock
           volumeMounts:
             - name: socket-dir
-              mountPath: /plugin
+              mountPath: /csi
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
       volumes:
         - name: socket-dir
           emptyDir:
+            medium: Memory
